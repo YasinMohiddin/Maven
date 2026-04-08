@@ -1,60 +1,42 @@
-@Library('mylibrary')_
-
-
 pipeline
 {
     agent any
     stages
     {
-        stage('Download_Master')
+        stage('download')
         {
             steps
             {
-                script
-                {
-                    cicd.gitDownload("maven")
-                }
+                git 'https://github.com/YasinMohiddin/Maven.git'
             }
         }
-        stage('Build_Master')
+        stage('build')
         {
             steps
             {
-                script
-                {
-                    cicd.buildArtifact()
-                }
+                sh 'mvn package'
             }
         }
-        stage('Deployment_Master')
+        stage('deployment')
         {
             steps
             {
-                script
-                {
-                    cicd.deployTomcat("DeclarativePipelinewithSharedLibraries","172.31.31.19","myapp")
-                }
+                deploy adapters: [tomcat9(alternativeDeploymentContext: '', credentialsId: 'dd04ea48-2b28-4901-9c60-00bfa9a33eb6', path: '', url: 'http://44.197.251.125:8080')], contextPath: 'test1', war: '**/*.war'
             }
         }
-        stage('Testing_Master')
+        stage('testing')
         {
             steps
             {
-                script
-                {
-                    cicd.gitDownload("FunctionalTesting")
-                    cicd.executeSelenium("DeclarativePipelinewithSharedLibraries")
-                }
+                git 'https://github.com/YasinMohiddin/FunctionTesting.git'
+                sh 'java -jar /var/lib/jenkins/workspace/Declerativepipeline1/testing.jar'
             }
         }
-        stage('Delivery_Master')
+        stage('delivery')
         {
             steps
             {
-                script
-                {
-                    cicd.deployTomcat("DeclarativePipelinewithSharedLibraries","172.31.25.180","myprodapp")
-                }
+                deploy adapters: [tomcat9(alternativeDeploymentContext: '', credentialsId: 'dd04ea48-2b28-4901-9c60-00bfa9a33eb6', path: '', url: 'http://44.222.92.104:8080')], contextPath: 'live', war: '**/*.war'
             }
         }
     }
